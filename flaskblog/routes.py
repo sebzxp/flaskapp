@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskblog import app, db, bcrypt
-from flaskblog.models import User, Post
-from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
+from flaskblog.models import User, Post, Comment
+from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, CommentForm
 from flask_login import login_user, current_user, logout_user, login_required
 import secrets
 import os
@@ -11,7 +11,8 @@ from PIL import Image
 @app.route('/home')
 def home():
 	posts = Post.query.order_by(Post.date_posted.desc())
-	return render_template('home.html', posts=posts)
+	comments = Comment.query.all()
+	return render_template('home.html', posts=posts, comments=comments)
 
 @app.route('/about')
 def about():
@@ -138,8 +139,20 @@ def delete_post(post_id):
 	return redirect(url_for('home'))
 
 
-
-
+@app.route('/post/<int:post_id>/comment', methods=['GET', 'POST'])
+@login_required
+def comment_post(post_id):
+	post = Post.query.get_or_404(post_id)
+	comment = Comment.query.all()
+	form = CommentForm()
+	if form.validate_on_submit():
+		comment = Comment(comment=form.comment.data, author=current_user, post_id=post.id)
+		comment.content = form.comment.data
+		db.session.add(comment)
+		db.session.commit()
+		flash('Your comment has been added', 'success')
+		return redirect(url_for('post', post_id=post.id))
+	return render_template('comment_post.html', title='Comment On Post', form=form, legend='Comment On Post')
 
 
 

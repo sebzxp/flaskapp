@@ -15,6 +15,7 @@
 		      		<button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
 		      	</div>
 		      {% endif %}
+		    	<a class="btn btn-secondary btn-sm m-1" href="{{ url_for('comment_post', post_id = post.id) }}">Comment</a>
 		    </div>
 		    <h2 class="article-title">{{ post.title }}</h2>
 		    <p class="article-content">{{ post.content }}</p>
