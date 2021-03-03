@@ -14,9 +14,9 @@ def home():
 	comments = Comment.query.all()
 	return render_template('home.html', posts=posts, comments=comments)
 
-@app.route('/about')
-def about():
-	return render_template('about.html', title='About')
+@app.route('/portfolio')
+def portfolio():
+	return render_template('about.html', title='Portfolio')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -133,6 +133,10 @@ def delete_post(post_id):
 	post = Post.query.get_or_404(post_id)
 	if post.author != current_user:
 		abort(403)
+	if Comment.query.get(post_id):
+		comments = Comment.query.filter_by(post_id=post.id).all()
+		for comment in comments:
+			db.session.delete(comment)
 	db.session.delete(post)
 	db.session.commit()
 	flash('Your post has been deleted', 'success')
@@ -153,6 +157,18 @@ def comment_post(post_id):
 		flash('Your comment has been added', 'success')
 		return redirect(url_for('post', post_id=post.id))
 	return render_template('comment_post.html', title='Comment On Post', form=form, legend='Comment On Post')
+
+@app.route('/comment/<int:comment_id>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_comment(comment_id):
+	comment = Comment.query.get_or_404(comment_id)
+	if comment.author != current_user:
+		abort(403)
+	db.session.delete(comment)
+	db.session.commit()
+	flash('Your comment has been deleted', 'success')
+	return redirect(url_for('home'))
+
 
 
 
